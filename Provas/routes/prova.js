@@ -13,15 +13,23 @@ router.get('/', function (req, res, next) {
   });
 });
 
-
-
-
+router.get('/:id/versao/:versao/questoes', function (req, res, next) {
+  Prova.getQuestoes(req.params.id, req.params.versao, (err, questoesData) => {
+    if (err) {
+      res.status(602).json({ message: "Erro a obter questões", error: err });
+    } else {
+      res.json(questoesData);
+    }
+  });
+});
 
 router.get('/:id/versao/:versao', function (req, res, next) {
   Prova.getProvaByIdVersao(req.params.id, req.params.versao,(err, provaData) => {
     if (err) {
       res.status(602).json({ message: "Erro a obter prova", error: err });
     } else {
+      console.log(provaData)
+/*
       const prova = new Prova(
         provaData.id_prova,
         provaData.data,
@@ -31,7 +39,8 @@ router.get('/:id/versao/:versao', function (req, res, next) {
         provaData.bloquear,
         provaData.tempoAdmissao
       );
-      res.json(prova)
+      */
+      res.json(provaData)
     }
   });
 });
@@ -41,6 +50,8 @@ router.get('/:id', function (req, res, next) {
     if (err) {
       res.status(602).json({ message: "Erro a obter prova", error: err });
     } else {
+
+      /*
       const prova = new Prova(
         provaData.id_prova,
         provaData.data,
@@ -48,9 +59,10 @@ router.get('/:id', function (req, res, next) {
         provaData.nVersoes,
         provaData.aleatorio,
         provaData.bloquear,
-        provaData.tempoAdmissao
       );
-      res.json(prova)
+      */
+
+      res.json(provaData)
     }
   });
 });
@@ -68,5 +80,19 @@ router.post('/', function (req, res, next) {
   res.json({ message: 'Provas added successfully' });
 });
 
+
+router.delete('/:id/versao/:versao/questoes/:idQuestao', function (req, res, next) {
+  const idProva = req.params.id;
+  const versao = req.params.versao;
+  const idQuestao = req.params.idQuestao;
+
+  Prova.deleteOpcao(idProva, versao, idQuestao, (err, result) => {
+    if (err) {
+      res.status(500).json({ message: "Erro ao excluir questão", error: err });
+    } else {
+      res.json({ message: "Questão excluída com sucesso", result: result });
+    }
+  });
+});
 
 module.exports = router;

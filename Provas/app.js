@@ -51,7 +51,7 @@ const createTableQuestao = `
 CREATE TABLE IF NOT EXISTS questao (
   id_questao VARCHAR(255) PRIMARY KEY,
   enunciado VARCHAR(255),
-  cotacao FLOAT(25),
+  cotacao_questao FLOAT(25),
   tipoQuestao ENUM('EM', 'V/F', 'ESPACOS','DESENVOLVIMENTO'),
   nVersao INT(10),
   id_prova VARCHAR(255),
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS opcao(
   idopcao VARCHAR(255) PRIMARY KEY,
   opcao VARCHAR(255),
   criterio VARCHAR(255),
-  cotacao FLOAT(25),
+  cotacao_opcao FLOAT(25),
   id_questao VARCHAR(255),
   FOREIGN KEY (id_questao) REFERENCES questao(id_questao)
 );`

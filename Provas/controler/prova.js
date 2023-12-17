@@ -1,4 +1,8 @@
 const db = require('./connection');
+const Questao = require('../classes/Questao');
+const Opcao = require('../classes/Opcao');
+
+
 
 module.exports.getAllProvas = (callback) => {
     const query = 'SELECT * FROM prova';
@@ -12,7 +16,7 @@ module.exports.getAllProvas = (callback) => {
   };
 
 module.exports.getProvaById = (id, callback) => {
-  const query = 'SELECT * FROM prova WHERE id_prova = ' + id+`;`;
+  const query = `SELECT * FROM prova WHERE id_prova = '${id}';`;
   db.query(query, [id], (err, results) => {
     if (err) {
       callback(err, null);
@@ -23,7 +27,7 @@ module.exports.getProvaById = (id, callback) => {
 };
 
 module.exports.getVersoesProvaById = (id, callback) => {
-  const query = 'SELECT * FROM provaComVersao WHERE id_prova =' +id +`;`;
+  const query = `SELECT * FROM provaComVersao WHERE id_prova = '${id}';`;
   db.query(query, [id], (err, results) => {
     if (err) {
       callback(err, null);
@@ -34,7 +38,7 @@ module.exports.getVersoesProvaById = (id, callback) => {
 };
 
 module.exports.getProvaByIdVersao = (id, versao, callback) => {
-  const query = 'SELECT * FROM provaComVersao WHERE id_prova =' +id +' AND nVersao = ' + versao+`;`;
+  const query = `SELECT * FROM provaComVersao WHERE id_prova = '${id}' AND nVersao = '${versao}';`;
   db.query(query, [id], (err, results) => {
     if (err) {
       callback(err, null);
@@ -49,7 +53,7 @@ module.exports.getQuestoes = (id, versao, callback) => {
       SELECT q.*, o.*
       FROM questao q
       LEFT JOIN opcao o ON q.id_questao = o.id_questao
-      WHERE q.id_prova =`+id+ `AND q.versao = `+versao+`;`;
+      WHERE q.id_prova = '${id}' AND q.nVersao = '${versao}';`;
 
     db.query(query, [id, versao], (err, results) => {
       if (err) {
@@ -64,25 +68,27 @@ module.exports.getQuestoes = (id, versao, callback) => {
             const questao = new Questao(
               questaoData.id_questao,
               questaoData.enunciado,
-              questaoData.cotacao,
+              questaoData.cotacao_questao,
               questaoData.tipoQuestao,
-              questaoData.versao,
-              questaoData.id_prova
+              questaoData.nVersao,
+              questaoData.id_prova,
+              []
             );
 
             questoesMap.set(questaoId, questao);
-          }
 
+          }
           // Attach options to the corresponding question
           const opcao = new Opcao(
             questaoData.idopcao,
             questaoData.opcao,
             questaoData.criterio,
-            questaoData.cotacao,
+            questaoData.cotacao_opcao,
             questaoData.id_questao
           );
 
           questoesMap.get(questaoId).opcoes.push(opcao);
+
         });
 
         const questoes = Array.from(questoesMap.values());
@@ -168,4 +174,16 @@ module.exports.addProva = provaData =>{
       addVersao(versaoData, id_prova,i++);
     });
   });
+
+  function deleteOpcao(id_opcao) {
+    // Delete opcao from the database
+    const opcaoDeleteQuery = `DELETE FROM opcao WHERE id_opcao = '${id_opcao}';`;
+    
+    db.query(opcaoDeleteQuery, [id_opcao], (err, result) => {
+      if (err) {
+        console.error('Error deleting opcao:', err);
+      }
+    });
+  }
+  
 }

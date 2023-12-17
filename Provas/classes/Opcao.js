@@ -1,9 +1,9 @@
 class Opcao {
     constructor(idOpcao, opcao, criterio, cotacao) {
-      this.idOpcao = idOpcao;
+      this.idopcao = idOpcao;
       this.opcao = opcao;
       this.criterio = criterio;
-      this.cotacao = cotacao;
+      this.cotacao_opcao = cotacao;
     }
 }
 
