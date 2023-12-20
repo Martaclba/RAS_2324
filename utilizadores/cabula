@@ -1,0 +1,5 @@
+
+# Cria a base de dados, ⚠ APAGA TUDO O QUE TINHA ANTES
+
+sqlite3 db/users.db < db/utilizadores.sql
+
