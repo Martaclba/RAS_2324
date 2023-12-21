@@ -91,3 +91,18 @@ def all_users():
         return all
     else:
         return None
+
+
+
+
+def getPassword(user_id):
+    'Return the password from a user'
+
+    query = 'SELECT password FROM utilizador  WHERE id = ?'
+    user = conn.execute(query, ( user_id,)).fetchone()
+    if user != None:
+        password = user[0]
+        return password
+    else:
+        print(f'User {user_id} not found')
+        return None
