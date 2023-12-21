@@ -6,27 +6,29 @@ CREATE TABLE IF NOT EXISTS "utilizador" (
     "name"     TEXT NOT NULL,
     "email"    TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "type"     INTEGER NOT NULL
+    "type"     INTEGER NOT NULL 
 );
 
 -- type 1 → utilizador académico
--- type 2 → utilizador administrador
+-- type 2 → utilizador gestor
 -- type 3 → ambos  ( caso seja docente e aluno)
 
 DROP TABLE IF EXISTS "uc";
 CREATE TABLE "uc" (
     "n"           INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "description" TEXT NOT NULL
+    "description" TEXT NOT NULL,
+    UNIQUE ("n", "description")
 );
 
 
 DROP TABLE IF EXISTS "aluno";
 CREATE TABLE "aluno" (
     "id" TEXT ,
-    "uc_frequenta" INTEGER ,
+    "uc_attends" INTEGER ,
 
     FOREIGN KEY ("id") REFERENCES "utilizador"("id") ON UPDATE CASCADE
-    FOREIGN KEY ("uc_frequenta") REFERENCES "uc"("n") ON UPDATE CASCADE
+    FOREIGN KEY ("uc_attends") REFERENCES "uc"("n") ON UPDATE CASCADE
+    UNIQUE ("id", "uc_attends")
 );
 
 
@@ -34,10 +36,11 @@ CREATE TABLE "aluno" (
 DROP TABLE IF EXISTS "docente";
 CREATE TABLE "docente" (
     "id" TEXT ,
-    "uc_frequenta" INTEGER ,
+    "uc_gives" INTEGER ,
 
     FOREIGN KEY ("id") REFERENCES "utilizador"("id") ON UPDATE CASCADE
-    FOREIGN KEY ("uc_frequenta") REFERENCES "uc"("n") ON UPDATE CASCADE
+    FOREIGN KEY ("uc_gives") REFERENCES "uc"("n") ON UPDATE CASCADE
+    UNIQUE ("id", "uc_gives")
 );
 
 
