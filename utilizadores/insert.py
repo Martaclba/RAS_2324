@@ -50,9 +50,13 @@ def insert_docente(id, uc_id):
 
 def insert_user(id, name, email, password, user_type, attends=[], gives=[]):
     query = 'INSERT INTO utilizador (id, name, email, password, type) VALUES (?, ?, ?, ?, ?)'
-    conn.execute(query,(id, name, email, password, user_type))
+    try:
+        conn.execute(query,(id, name, email, password, user_type))
+        conn.commit()
+   
+    except Exception as e:
+        print(f"Error inserting user: {e}")
 
-    conn.commit()
     # type 1 → utilizador académico
     #if   user_type == 1:
     for uc_attended in attends:

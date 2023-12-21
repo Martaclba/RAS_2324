@@ -9,16 +9,16 @@ from update   import *
 import sqlite3
 import json
 
-js = getPerfil('a95191')
-print(js)
-insert_aluno('a95191', 3)
-
+#js = getPerfil('a95191')
+#print(js)
+#insert_aluno('a95191', 3)
+ 
 k = {'id': 'a12345', 'name': 'JNO', 'email': 'JNO@gmail.com', 'password': 'correctinside', 'type': 3, 'attends': None, 'gives': ['Desenvolvimento de Aplicações']}
 insert_user_dic(k)
 
 
-js = all_users()
-print(js)
+#js = all_users()
+#print(js)
 
 app = Flask(__name__)
 
@@ -89,6 +89,34 @@ def autentica():
 
 
 
+
+# http://127.0.0.1:5000/registarAluno?id=a99999&name=Marta&password=novapass&email=email@hotmail.com&type=3&gives=1&gives=3
+# Route with a 2 arguments 'id' ans 'password'
+@app.route('/registarAluno', methods=['GET','POST'])
+def registaAluno():
+    id       = request.args.get    ('id'      , type=str)
+    name     = request.args.get    ('name'    , type=str)
+    password = request.args.get    ('password', type=str)
+    email    = request.args.get    ('email'   , type=str)
+    type     = request.args.get    ('type'    , type=int)
+    attends  = request.args.getlist('attends'           )
+    gives    = request.args.getlist('gives'             )
+
+    gives_values   = [int(x) for x in gives]
+    attends_values = [int(x) for x in attends]
+
+    if id is None or password is None or name is None or email is None or type is None:
+        return jsonify(error="Missing parameter"), 400
+    try:
+        print(gives_values, attends_values)
+        insert_user(id, name, email,  password, type, attends_values, gives_values)
+        return jsonify({})
+    except:
+        return jsonify(error="An exception occurred while inserting into the database"), 500
+
+        
+        
+        #request.files
 
 
 
