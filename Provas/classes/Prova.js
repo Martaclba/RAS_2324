@@ -6,7 +6,7 @@ class Prova {
       this.nVersoes = nVersoes;
       this.aleatorio = aleatorio;
       this.bloquear = bloquear;
-      this.versoes = versoes || [];
+      this.versoes = Array.isArray(versoes) ? versoes : [];
     }
 }
 
