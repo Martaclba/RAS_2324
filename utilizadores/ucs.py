@@ -1,4 +1,3 @@
-import sqlite3
 from settings import *
 
 def getUc_docente(user_id):

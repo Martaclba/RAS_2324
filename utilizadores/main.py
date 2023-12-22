@@ -1,13 +1,12 @@
 #!/usr/bin/python
-from flask import Flask, render_template, request, jsonify
+import json
+from flask import Flask, request, jsonify
 
 from settings import *
 from insert   import *
 from ucs      import *
 from update   import *
 
-import sqlite3
-import json
 
 #js = getPerfil('a95191')
 #print(js)
@@ -88,8 +87,6 @@ def autentica():
         return jsonify(error="An exception occurred"), 500
 
 
-
-
 # http://127.0.0.1:5000/registarAluno?id=a99999&name=Marta&password=novapass&email=email@hotmail.com&type=3&gives=1&gives=3
 # Route with a 2 arguments 'id' ans 'password'
 @app.route('/registarAluno', methods=['GET','POST'])
@@ -114,9 +111,40 @@ def registaAluno():
     except:
         return jsonify(error="An exception occurred while inserting into the database"), 500
 
-        
-        
-        #request.files
+# http://127.0.0.1:5000/getAll
+@app.route('/getAll', methods=['GET'])
+def getAll():
+    return jsonify(all_users())
+
+
+
+
+@app.route('/registarAlunoLista', methods=['POST'])
+def registaAlunoLista():
+    try:
+        file = request.files['file']  # Assuming you're sending the file in the request as 'file'
+        if file and file.filename.endswith('.json'):
+            data = json.load(file)
+            for student in data:
+                insert_user_dic(student)
+            return jsonify({})
+        else:
+            return jsonify(error="Invalid file format. Please provide a JSON file."), 400
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(error="An exception occurred while processing the file"), 500
+
+
+
+@app.route('/getResgistoDocenteForm', methods=['GET'])
+def getResgistoDocenteForm():
+    dict = {'id': None, 'name': None, 'email': None, 'password': None, 'type': 3, 'attends': None, 'gives': None}
+    return jsonify(dict)
+
+
+
+
 
 
 
