@@ -568,8 +568,7 @@ function addQuestao(questaoData, id_prova, nVersao) {
 module.exports.addQuestao_post = addQuestao;
 
 
-function addVersao(versaoData,id_prova,nVersao) {
-  const { idSala, hora, questoes } = versaoData;
+function addVersao(id_prova,idSala,nVersao, hora) {
 
   if (!nVersao) {
     nVersao = versaoData.nVersao;
@@ -583,19 +582,16 @@ function addVersao(versaoData,id_prova,nVersao) {
       console.error('Error inserting provaComVersao:', err);
       return;
     }
-
-    // Insert associated questoes and opcoes
-    questoes.forEach(questaoData => {
-      addQuestao(questaoData,id_prova,nVersao);
-    });
+    
   });
 }
 module.exports.addVersao_post = addVersao;
 
 module.exports.addProva = provaData =>{
-  const { id_prova, data, duracao, nVersoes, aleatorio, bloquear, versoes } = provaData;
+  const { id_prova, data, duracao, hora, aleatorio, bloquear, salas } = provaData;
 
   // Insert prova into the database
+  nVersoes = salas.length;
   const provaInsertQuery = 'INSERT INTO prova VALUES (?, ?, ?, ?, ?, ?);';
   const provaValues = [id_prova,data, duracao, nVersoes, aleatorio, bloquear];
 
@@ -608,12 +604,9 @@ module.exports.addProva = provaData =>{
 
     // Insert associated provasComVersao, questoes, and opcoes
     var i = 1;
-    versoes.forEach(versaoData => {
-      addVersao(versaoData, id_prova,i++);
+    salas.forEach( (sala) => {
+      addVersao(id_prova,sala,i++, hora);
     });
   });
-
-
-  
   
 }
