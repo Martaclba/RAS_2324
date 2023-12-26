@@ -2,8 +2,54 @@ var express = require('express');
 var router = express.Router();
 var Prova = require('../controler/prova')
 
+router.post('/:id/corrigir', async (req, res) => {
+  try {
+    Prova.corrigirProva(req.params.id);
+
+    res.json({ message: 'Prova corrigida com sucesso' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Erro ao corrigir a prova' });
+  }
+});
+
+router.post('/:id/corrigir_todas', async (req, res) => {
+  try {
+    Prova.corrigirProvaPorIdProva(req.params.id);
+
+    res.json({ message: 'Prova corrigida com sucesso' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Erro ao corrigir a prova' });
+  }
+});
 
 
+router.post('/:id/responder', async (req, res) => {
+  const { id } = req.params;
+  const { numAluno, respostas } = req.body;
+
+  try {
+    // Chama a função responderProva do controlador
+    Prova.responderProva(id, numAluno, respostas);
+
+    res.json({ message: 'Resposta da prova registrada com sucesso' });
+  } catch (error) {
+    console.error('Erro:', error);
+    res.status(500).json({ message: 'Erro ao processar a resposta da prova' });
+  }
+})
+
+
+router.get('/:id/prova_realizada', function (req, res, next) {
+  Prova.getProvaRealizada(req.params.id, (err, provaData) => {
+    if (err) {
+      res.status(602).json({ message: "Erro a obter a questão", error: err });
+    } else {
+      res.json(provaData);
+    }
+  });
+});
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -193,8 +239,5 @@ Prova.deleteQuestao(req.params.idQuestao, (err, result) => {
     }
   });
 });
-
-
-
   
 module.exports = router;

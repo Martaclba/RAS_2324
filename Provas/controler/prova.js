@@ -1,6 +1,163 @@
 const db = require('./connection');
 const Questao = require('../classes/Questao');
 const Opcao = require('../classes/Opcao');
+const uuid = require('uuid');
+
+
+function responderProva(idProva, numAluno, respostas) {
+  const idProvaRealizada = uuid.v4(); 
+
+  const insertProvaRealizadaQuery = `
+    INSERT INTO prova_realizada (id_prova_realizada, classificacao_final, num_aluno, id_prova)
+    VALUES ('${idProvaRealizada}', NULL, '${numAluno}', '${idProva}');
+  `;
+
+  db.query(insertProvaRealizadaQuery, (errProvaRealizada, resultProvaRealizada) => {
+    if (errProvaRealizada) {
+      console.error('Erro ao inserir na tabela prova_realizada:', errProvaRealizada);
+    } else {
+      respostas.forEach(resposta => {
+        const { id_questao, opcoes } = resposta;
+
+        const insertQuestaoRespondidaQuery = `
+          INSERT INTO questao_respondida (id_prova_realizada, id_questao, classificacao)
+          VALUES ('${idProvaRealizada}', '${id_questao}', NULL);
+        `;
+
+        db.query(insertQuestaoRespondidaQuery, (errQuestaoRespondida, resultQuestaoRespondida) => {
+          if (errQuestaoRespondida) {
+            console.error('Erro ao inserir na tabela questao_respondida:', errQuestaoRespondida);
+          } else {
+            opcoes.forEach(opcao => {
+              const { id_opcao, resposta_utilizador } = opcao;
+
+              const insertRespostaQuery = `
+                INSERT INTO resposta (id_prova_realizada, id_questao, id_opcao, resposta)
+                VALUES ('${idProvaRealizada}', '${id_questao}', '${id_opcao}', '${resposta_utilizador}');
+              `;
+
+              db.query(insertRespostaQuery, (errResposta, resultResposta) => {
+                if (errResposta) {
+                  console.error('Erro ao inserir na tabela resposta:', errResposta);
+                }
+              });
+            });
+          }
+        });
+      });
+    }
+  });
+}
+
+
+
+module.exports.responderProva = responderProva;
+
+
+function corrigirProva(id_prova_realizada) {
+  // Query to get all questions for the given exam
+  const questoesProvaQuery = `
+    SELECT id_questao
+    FROM questao_respondida
+    WHERE id_prova_realizada = '${id_prova_realizada}';
+  `;
+
+  db.query(questoesProvaQuery, (errQuestoesProva, resultQuestoesProva) => {
+    if (errQuestoesProva) {
+      console.error('Error fetching questions for the exam:', errQuestoesProva);
+    } else {
+            resultQuestoesProva.forEach((questao) => {
+        const id_questao = questao.id_questao;
+
+        // Query to calculate the score for the current question
+        const classificacaoQuestaoQuery = `
+          SELECT SUM(opcao.cotacao_opcao) AS classificacao
+          FROM resposta
+          JOIN opcao ON resposta.id_opcao = opcao.idopcao
+          WHERE resposta.id_questao = '${id_questao}' AND resposta.resposta = opcao.criterio;
+        `;
+
+        db.query(classificacaoQuestaoQuery, (errClassificacaoQuestao, resultClassificacaoQuestao) => {
+          if (errClassificacaoQuestao) {
+            console.error('Error calculating question scores:', errClassificacaoQuestao);
+          } else {
+            const classificacao = resultClassificacaoQuestao[0].classificacao || 0;
+
+            // Update the classification for the current question
+            const updateQuestaoRespondidaQuery = `
+              UPDATE questao_respondida
+              SET classificacao = ${classificacao}
+              WHERE id_prova_realizada = '${id_prova_realizada}' AND id_questao = '${id_questao}';
+            `;
+            db.query(updateQuestaoRespondidaQuery, (errUpdateQuestaoRespondida, resultUpdateQuestaoRespondida) => {
+              if (errUpdateQuestaoRespondida) {
+                console.error('Error updating questao_respondida:', errUpdateQuestaoRespondida);
+              } else {
+                console.log(`Questao respondida ${id_questao} corrigida. Classificacao: ${classificacao}`);
+              }
+            });
+          }
+        });
+      });
+
+      // Now, calculate the total classification for the exam
+      const classificacaoTotalQuery = `
+      SELECT SUM(opcao.cotacao_opcao) AS classificacao_total
+      FROM resposta
+      JOIN opcao ON resposta.id_opcao = opcao.idopcao
+      WHERE resposta.id_prova_realizada = '${id_prova_realizada}' AND resposta.resposta = opcao.criterio;
+    `;
+
+      db.query(classificacaoTotalQuery, (errClassificacaoTotal, resultClassificacaoTotal) => {
+        if (errClassificacaoTotal) {
+          console.error('Error calculating total classification:', errClassificacaoTotal);
+        } else {
+          const classificacaoTotal = resultClassificacaoTotal[0].classificacao_total || 0;
+
+          // Update the total classification for the exam
+          const updateProvaRealizadaQuery = `
+            UPDATE prova_realizada
+            SET classificacao_final = ${classificacaoTotal}
+            WHERE id_prova_realizada = '${id_prova_realizada}';
+          `;
+          db.query(updateProvaRealizadaQuery, (errUpdateProvaRealizada, resultUpdateProvaRealizada) => {
+            if (errUpdateProvaRealizada) {
+              console.error('Error updating prova_realizada:', errUpdateProvaRealizada);
+            } else {
+              console.log(`Prova realizada ${id_prova_realizada} corrigida. Classificacao final: ${classificacaoTotal}`);
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+module.exports.corrigirProva = corrigirProva;
+
+async function corrigirProvaPorIdProva(id_prova) {
+  // Query to get all exams taken for the given exam
+  const provasRealizadasQuery = `
+    SELECT id_prova_realizada
+    FROM prova_realizada
+    WHERE id_prova = '${id_prova}';
+  `;
+
+  db.query(provasRealizadasQuery, (errProvasRealizadas, resultProvasRealizadas) => {
+    if (errProvasRealizadas) {
+      console.error('Error fetching exams taken for the exam:', errProvasRealizadas);
+    } else {
+      resultProvasRealizadas.forEach((provaRealizada) => {
+        const id_prova_realizada = provaRealizada.id_prova_realizada;
+
+        // Call the original function to correct each exam taken
+        corrigirProva(id_prova_realizada);
+      });
+    }
+  });
+}
+
+module.exports.corrigirProvaPorIdProva = corrigirProvaPorIdProva;
 
 function deleteQuestao(idQuestao, callback) {
 
@@ -195,6 +352,63 @@ module.exports.getVersoesProvaById = (id, callback) => {
       callback(err, null);
     } else {
       callback(null, results);
+    }
+  });
+};
+
+module.exports.getProvaRealizada = (id_prova_realizada, callback) => {
+  const query = `
+    SELECT
+      pr.classificacao_final,
+      qr.id_questao,
+      q.enunciado AS enunciado_questao,
+      q.cotacao_questao,
+      qr.classificacao AS classificacao_questao,
+      o.opcao AS opcao_respondida,
+      r.resposta
+    FROM prova_realizada pr
+    LEFT JOIN questao_respondida qr ON pr.id_prova_realizada = qr.id_prova_realizada
+    LEFT JOIN questao q ON qr.id_questao = q.id_questao
+    LEFT JOIN resposta r ON qr.id_prova_realizada = r.id_prova_realizada AND qr.id_questao = r.id_questao
+    LEFT JOIN opcao o ON r.id_opcao = o.idopcao
+    WHERE pr.id_prova_realizada = '${id_prova_realizada}';
+  `;
+
+  db.query(query, [id_prova_realizada], (err, results) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      // Transforming SQL results into the desired JSON format
+      const jsonResult = {
+        classificacao_final: results[0].classificacao_final,
+        questoes: []
+      };
+
+      // Grouping results by questao id
+      results.reduce((acc, row) => {
+        //console.log(acc)
+        //console.log(row)
+        if (!acc[row.id_questao]) {
+          acc[row.id_questao] = {
+            enunciado: row.enunciado_questao,
+            cotacao: row.cotacao_questao,
+            classificacao: row.classificacao_questao,
+            opcoes: []
+          };
+          jsonResult.questoes.push(acc[row.id_questao]);
+        }
+
+        if (row.opcao_respondida !== null) {
+          acc[row.id_questao].opcoes.push({
+            opcao: row.opcao_respondida,
+            resposta: row.resposta
+          });
+        }
+        return acc;
+
+      }, {});
+
+      callback(null, jsonResult);
     }
   });
 };
