@@ -122,14 +122,12 @@ def getAll():
 @app.route('/registarAlunoLista', methods=['POST'])
 def registaAlunoLista():
     try:
-        file = request.files['file']  # Assuming you're sending the file in the request as 'file'
-        if file and file.filename.endswith('.json'):
-            data = json.load(file)
+        for _, file in request.files.items():
+            content = file.stream.read()
+            data = json.loads(content.decode('utf-8'))
             for student in data:
                 insert_user_dic(student)
             return jsonify({})
-        else:
-            return jsonify(error="Invalid file format. Please provide a JSON file."), 400
 
     except Exception as e:
         print(str(e))
@@ -143,7 +141,10 @@ def getResgistoDocenteForm():
     return jsonify(dict)
 
 
-
+@app.route('/getResgistoAlunoForm', methods=['GET'])
+def getResgistoDocenteForm():
+    dict = {'id': None, 'name': None, 'email': None, 'password': None, 'type': 1, 'attends': None, 'gives': None}
+    return jsonify(dict)
 
 
 
@@ -152,5 +153,8 @@ def getResgistoDocenteForm():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+    print("Desconnecting from database")
+    conn.close() 
 
 conn.close()
