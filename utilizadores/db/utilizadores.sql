@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS "utilizador" (
 );
 
 -- type 1 → utilizador académico
--- type 2 → utilizador gestor
--- type 3 → ambos  ( caso seja docente e aluno)
+-- type 2 → utilizador docente
+-- type 3 → gestor
 
 DROP TABLE IF EXISTS "uc";
 CREATE TABLE "uc" (

@@ -18,7 +18,6 @@ def insert_user_dic(dic):
         insert_user(dic['id'], dic['name'], dic['email'], dic['password'],dic['type'], dic['attends'], dic['gives'])
     except:
         print(f'USER {dic["id"]} can\'t be inserted')
-        pass
 
 
 def insert_aluno(id, uc_id):
@@ -61,9 +60,9 @@ def insert_user(id, name, email, password, user_type, attends=[], gives=[]):
     #if   user_type == 1:
     for uc_attended in attends:
         insert_aluno(id,uc_attended)
-    # type 2 → utilizador gestor
+    # type 2 → utilizador docente
     #elif user_type == 2:
     for uc_given in gives:
         insert_docente(id,uc_given)
-    # type 3 → ambos  ( caso seja docente e aluno)
+    # type 3 → gestor
     #elif user_type == 3:

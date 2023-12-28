@@ -94,11 +94,48 @@ def all_users():
 
 
 
-def getPassword(user_id):
+def getPassword_byid(user_id):
     'Return the password from a user'
 
     query = 'SELECT password FROM utilizador  WHERE id = ?'
     user = conn.execute(query, ( user_id,)).fetchone()
+    if user != None:
+        password = user[0]
+        return password
+    else:
+        print(f'User {user_id} not found')
+        return None
+
+def getTypeId(user_id):
+    'Return the type from a user'
+
+    query = 'SELECT type FROM utilizador  WHERE id = ?'
+    user = conn.execute(query, ( user_id,)).fetchone()
+    if user != None:
+        password = user[0]
+        return password
+    else:
+        print(f'User {user_id} not found')
+        return None
+
+def getTypeEmail(user_email):
+    'Return the type from a user'
+    query = 'SELECT type FROM utilizador  WHERE email = ?'
+    user = conn.execute(query, ( user_email,)).fetchone()
+    if user != None:
+        password = user[0]
+        return password
+    else:
+        print(f'User {user_email} not found')
+        return None
+
+
+
+def getPassword_byemail(user_email):
+    'Return the password from a user'
+
+    query = 'SELECT password FROM utilizador  WHERE email = ?'
+    user = conn.execute(query, ( user_email,)).fetchone()
     if user != None:
         password = user[0]
         return password

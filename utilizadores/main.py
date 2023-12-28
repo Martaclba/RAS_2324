@@ -1,27 +1,17 @@
 #!/usr/bin/python
-import json
-from flask import Flask, request, jsonify
-
-from settings import *
-from insert   import *
-from ucs      import *
-from update   import *
 
 
-#js = getPerfil('a95191')
-#print(js)
-#insert_aluno('a95191', 3)
- 
+from settings       import *
+from insert         import *
+from ucs            import *
+from update         import *
+from route_register import *
+
 k = {'id': 'a12345', 'name': 'JNO', 'email': 'JNO@gmail.com', 'password': 'correctinside', 'type': 3, 'attends': None, 'gives': ['Desenvolvimento de Aplicações']}
 insert_user_dic(k)
 
 
-#js = all_users()
-#print(js)
-
-app = Flask(__name__)
-
-# http://127.0.0.1:5000/getPerdil?id=a95191
+# http://127.0.0.1:5000/getPerfil?id=a95191
 # Route with a single argument 'id'
 @app.route('/getPerfil', methods=['GET'])
 def getPerfil_r():
@@ -68,84 +58,52 @@ def editarPassword_r():
         return jsonify(error="An exception occurred"), 500
 
 
-# http://127.0.0.1:5000/autentica?id=a95191&password=novapass
+# http://127.0.0.1:5000/autenticaId?id=a95191&password=12356789
 # Route with a 2 arguments 'id' ans 'password'
-@app.route('/autentica', methods=['GET'])
-def autentica():
+@app.route('/autenticaId', methods=['GET'])
+def autentica_id():
     id = request.args.get('id', type=str)
     password = request.args.get('password', type=str)
 
     if id is None or password is None:
         return jsonify(error="Missing parameter"), 400
     try:
-        real_password = getPassword(id)
+        real_password = getPassword_byid(id)
         if real_password == password:
-            return jsonify({})
+            t = getTypeId(id)
+            return jsonify({'type':t})
         else: 
             return jsonify(error="Wrong password"), 500
     except:
         return jsonify(error="An exception occurred"), 500
 
 
-# http://127.0.0.1:5000/registarAluno?id=a99999&name=Marta&password=novapass&email=email@hotmail.com&type=3&gives=1&gives=3
-# Route with a 2 arguments 'id' ans 'password'
-@app.route('/registarAluno', methods=['GET','POST'])
-def registaAluno():
-    id       = request.args.get    ('id'      , type=str)
-    name     = request.args.get    ('name'    , type=str)
-    password = request.args.get    ('password', type=str)
-    email    = request.args.get    ('email'   , type=str)
-    type     = request.args.get    ('type'    , type=int)
-    attends  = request.args.getlist('attends'           )
-    gives    = request.args.getlist('gives'             )
 
-    gives_values   = [int(x) for x in gives]
-    attends_values = [int(x) for x in attends]
+# http://127.0.0.1:5000/autenticaEmail?email=joaoafonsoalvim@gmail.com&password=12356789
+# Route with a 2 arguments 'email' and 'password'
+@app.route('/autenticaEmail', methods=['GET'])
+def autentica_email():
+    email = request.args.get('email', type=str)
+    password = request.args.get('password', type=str)
 
-    if id is None or password is None or name is None or email is None or type is None:
+    if email is None or password is None:
         return jsonify(error="Missing parameter"), 400
     try:
-        print(gives_values, attends_values)
-        insert_user(id, name, email,  password, type, attends_values, gives_values)
-        return jsonify({})
+        real_password = getPassword_byemail(email)
+        if real_password == password:
+            t = getTypeEmail(email)
+            return jsonify({'type':t})
+        else: 
+            return jsonify(error="Wrong password"), 500
     except:
-        return jsonify(error="An exception occurred while inserting into the database"), 500
+        return jsonify(error="An exception occurred"), 500
+
+
 
 # http://127.0.0.1:5000/getAll
 @app.route('/getAll', methods=['GET'])
 def getAll():
     return jsonify(all_users())
-
-
-
-
-@app.route('/registarAlunoLista', methods=['POST'])
-def registaAlunoLista():
-    try:
-        for _, file in request.files.items():
-            content = file.stream.read()
-            data = json.loads(content.decode('utf-8'))
-            for student in data:
-                insert_user_dic(student)
-            return jsonify({})
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(error="An exception occurred while processing the file"), 500
-
-
-
-@app.route('/getResgistoDocenteForm', methods=['GET'])
-def getResgistoDocenteForm():
-    dict = {'id': None, 'name': None, 'email': None, 'password': None, 'type': 3, 'attends': None, 'gives': None}
-    return jsonify(dict)
-
-
-@app.route('/getResgistoAlunoForm', methods=['GET'])
-def getResgistoDocenteForm():
-    dict = {'id': None, 'name': None, 'email': None, 'password': None, 'type': 1, 'attends': None, 'gives': None}
-    return jsonify(dict)
-
 
 
 
