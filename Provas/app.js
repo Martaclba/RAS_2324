@@ -10,10 +10,24 @@ const cors = require('cors');
 const connection = require('./controler/connection');
 
 
+const createTableAluno = `
+CREATE TABLE IF NOT EXISTS aluno (
+  id_aluno VARCHAR(255) PRIMARY KEY
+);`
+
+connection.query(createTableAluno, (err, results) => {
+  if (err) {
+    console.error('Error creating tables:', err);
+  } else {
+    console.log('Tables created successfully');
+  }}
+)
 
 const createTableProva = `
 CREATE TABLE IF NOT EXISTS prova (
   id_prova VARCHAR(255) PRIMARY KEY,
+  nome VARCHAR(255),
+  id_docente VARCHAR(255),
   data VARCHAR(255),
   duracao INT(10),
   nVersoes INT(10),
@@ -22,6 +36,24 @@ CREATE TABLE IF NOT EXISTS prova (
 );`
 
 connection.query(createTableProva, (err, results) => {
+  if (err) {
+    console.error('Error creating tables:', err);
+  } else {
+    console.log('Tables created successfully');
+  }}
+)
+
+
+const createTableAlunoProvas = `
+CREATE TABLE IF NOT EXISTS alunoProva (
+  id_aluno VARCHAR(255),
+  id_prova VARCHAR(255),
+  PRIMARY KEY (id_aluno, id_prova),
+  FOREIGN KEY (id_aluno) REFERENCES aluno(id_aluno),
+  FOREIGN KEY (id_prova) REFERENCES prova(id_prova)
+);`
+
+connection.query(createTableAlunoProvas, (err, results) => {
   if (err) {
     console.error('Error creating tables:', err);
   } else {
@@ -88,7 +120,8 @@ CREATE TABLE IF NOT EXISTS prova_realizada(
   classificacao_final FLOAT(25),
   num_aluno VARCHAR(255),
   id_prova VARCHAR(255),
-  FOREIGN KEY (id_prova) REFERENCES prova(id_prova)
+  FOREIGN KEY (id_prova) REFERENCES prova(id_prova),
+  FOREIGN KEY (num_aluno) REFERENCES aluno(id_aluno)
 );`
 connection.query(createTableProvaRealizada, (err, results) => {
   if (err) {

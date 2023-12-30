@@ -2,7 +2,18 @@ var express = require('express');
 var router = express.Router();
 var Prova = require('../controler/prova')
 
-router.post('/:id/corrigir', async (req, res) => {
+
+
+router.get('/aluno/:id',function (req, res, next) {
+  Prova.getProvasAluno(req.params.id, (err, provaData) => {
+    if (err) {
+      res.status(602).json({ message: "Erro a obter a questão", error: err });
+    } else {
+      res.json(provaData);
+    }
+  });
+});
+router.put('/:id/corrigir', async (req, res) => {
   try {
     Prova.corrigirProva(req.params.id);
 
@@ -13,7 +24,7 @@ router.post('/:id/corrigir', async (req, res) => {
   }
 });
 
-router.post('/:id/corrigir_todas', async (req, res) => {
+router.put('/:id/corrigir_todas', async (req, res) => {
   try {
     Prova.corrigirProvaPorIdProva(req.params.id);
 
@@ -52,8 +63,8 @@ router.get('/:id/prova_realizada', function (req, res, next) {
 });
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
-  Prova.getAllProvas((err, provas) => {
+router.get('/docente/:id', function (req, res, next) {
+  Prova.getAllProvas(req.params.id,(err, provas) => {
     if (err) {
       res.status(601).json({ message: "Erro a obter lista de provas", error: err });
     } else {

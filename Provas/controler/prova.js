@@ -301,9 +301,9 @@ module.exports.deleteProva = (idProva, callback) => {
 };
 
 
-module.exports.getAllProvas = (callback) => {
-    const query = 'SELECT * FROM prova';
-    db.query(query, (err, results) => {
+module.exports.getAllProvas = (id,callback) => {
+    const query = 'SELECT * FROM prova WHERE id_docente=?';
+    db.query(query,[id], (err, results) => {
       if (err) {
         callback(err, null);
       } else {
@@ -587,20 +587,63 @@ function addVersao(id_prova,idSala,nVersao, hora) {
 }
 module.exports.addVersao_post = addVersao;
 
+function addAlunoProva(prova,aluno) {
+  try {
+    const checkAlunoQuery = 'SELECT * FROM aluno WHERE id_aluno = ?;';
+    const checkAlunoValues = [aluno];
+    db.query(checkAlunoQuery, checkAlunoValues, (err, results) => {
+      if (err) {
+        console.error('Error checking aluno:', err);
+        return;
+      }
+      // If aluno doesn't exist, add them to the database
+      if (results.length === 0) {
+        const addAlunoQuery = 'INSERT INTO aluno VALUES (?);';
+        const addAlunoValues = [aluno];
+
+        db.query(addAlunoQuery, addAlunoValues, (err, result) => {
+          if (err) {
+            console.error('Error adding aluno:', err);
+            return;
+          }
+
+        });
+      }
+      const APInsertQuery = 'INSERT INTO alunoProva VALUES (?, ?);';
+      const APValues = [aluno,prova];
+      
+      db.query(APInsertQuery, APValues, (err, result) => {
+        if (err) {
+          console.error('Error inserting alunoProva:', err);
+        }
+      });
+    });
+    // Insert opcao into the database
+    
+  } catch (error) {
+    console.error('An error occurred in AddalunoProva:', error);
+  }
+}
+
+
 module.exports.addProva = provaData =>{
-  const { id_prova, data, duracao, hora, aleatorio, bloquear, salas } = provaData;
+  const { id_prova, nome,id_docente,data, duracao, hora,aleatorio, bloquear, alunos,salas } = provaData;
 
   // Insert prova into the database
+
   nVersoes = salas.length;
-  const provaInsertQuery = 'INSERT INTO prova VALUES (?, ?, ?, ?, ?, ?);';
-  const provaValues = [id_prova,data, duracao, nVersoes, aleatorio, bloquear];
+
+  const provaInsertQuery = 'INSERT INTO prova VALUES (?,?, ?,?, ?, ?, ?, ?);';
+  const provaValues = [id_prova,nome,id_docente,data, duracao, nVersoes, aleatorio, bloquear];
 
   db.query(provaInsertQuery, provaValues, (err, result) => {
     if (err) {
       console.error('Error inserting prova:', err);
       return;
     }
-
+    alunos.forEach( (aluno) => {
+      addAlunoProva(id_prova,aluno);
+    });
 
     // Insert associated provasComVersao, questoes, and opcoes
     var i = 1;
@@ -609,4 +652,37 @@ module.exports.addProva = provaData =>{
     });
   });
   
+}
+
+
+module.exports.getProvasAluno = (id_aluno,callback) =>{
+  const query = `
+      SELECT
+        p.id_prova ,
+        p.nome AS nome,
+        p.data,
+        CASE
+            WHEN STR_TO_DATE(p.data, '%d.%m.%Y') > CURDATE() THEN 'POR REALIZAR'
+            WHEN STR_TO_DATE(p.data, '%d.%m.%Y') = CURDATE() THEN 'REALIZAR'
+            WHEN pr.id_prova_realizada IS NOT NULL AND pr.classificacao_final IS NULL THEN 'REALIZADA'
+            WHEN pr.classificacao_final IS NOT NULL THEN 'CORRIGIDA'
+            ELSE 'NULL'
+        END AS estado
+      FROM
+        prova p
+      JOIN
+        alunoProva ap ON p.id_prova = ap.id_prova
+      LEFT JOIN
+        prova_realizada pr ON p.id_prova = pr.id_prova AND ap.id_aluno = pr.num_aluno
+      WHERE
+        ap.id_aluno = ?;
+  
+  `
+  db.query(query, [id_aluno], (err, results) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, results);
+    }
+  });
 }
