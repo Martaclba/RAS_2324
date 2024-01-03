@@ -67,10 +67,6 @@ createNotification = (numeroUtilizador, flagQuery, objeto,classificacao=null) =>
   return notiF
 }
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.jsonp({})
-});
 
 // Cria notificação sobre o registo do aluno
 router.post('/notification/registoAluno', function(req, res) {

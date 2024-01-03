@@ -4,6 +4,7 @@ var Notification = require('../models/notification');
 module.exports.getNotiIdAluno = (idAluno) => {
     return Notification
     .find({numeroUtilizador: idAluno})
+    .sort({ 'noti.data': -1 }) 
     .lean()
     .then(lista => {
         return lista;
