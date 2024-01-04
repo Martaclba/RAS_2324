@@ -1,15 +1,16 @@
 import React from "react";
 import NavbarDocente from "../componentes/NavbarDocente";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 
 
-function CriarProva5() {
+function CriarProva4() {
+  var { salas,provaNome,data ,idProva} = useLocation().state;
   const history = useNavigate();
   const voltar = () => {
       history('/salas');
   }
-  const continuar = () => {
-    history('/criarQuestao');
+  const continuar = (sala) => {
+    history('/criarQuestao',{ state: { sala,provaNome,data,idProva} });
   }
     return (
         <><NavbarDocente />
@@ -26,21 +27,16 @@ function CriarProva5() {
                             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 text-black">
                                 <h1>Escolha a versão para adicionar questões.</h1>
                                 <div>
+                                  {salas.map((sala, index) => (
                                     <button
-                                        type="button"
-                                        className="rounded-md bg-primary px-7 text-sm font-semibold text-white shadow-sm btn d-flex align-items-center justify-content-center"
-                                        onClick={continuar}
+                                      key={index}
+                                      type="button"
+                                      className="rounded-md bg-primary px-7 text-sm font-semibold text-white shadow-sm btn d-flex align-items-center justify-content-center"
+                                      onClick={() => continuar(sala)}
                                     >
-                                        Versão 1
+                                      Versão {index+1} - Sala {sala}
                                     </button>
-                                    <span style={{ margin: '0 8px' }}></span>
-                                    <button
-                                        type="button"
-                                        className="rounded-md bg-primary px-7 text-sm font-semibold text-white shadow-sm btn d-flex align-items-center justify-content-center"
-                                        onClick={continuar}
-                                    >
-                                        Versão 2
-                                    </button>
+                                  ))}
                                 </div>
                             </div>
                         </div>
@@ -60,4 +56,4 @@ function CriarProva5() {
   );
 }
 
-export default CriarProva5;
+export default CriarProva4;

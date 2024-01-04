@@ -1,20 +1,47 @@
 import React, { useState } from "react";
 import NavbarDocente from "../componentes/NavbarDocente";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 
 
 function CriarQuestao() {
+  var { sala,provaNome,data,idProva } = useLocation().state;
+  console.log(idProva)
   const [tipoQuestao, setTipoQuestao] = useState("");
   const [questoes, setQuestoes] = useState([]);
-  const [novaQuestao, setNovaQuestao] = useState("");
+  const [enunciado, setEnunciado] = useState("");
 
   const handleAdicionarQuestao = () => {
-    // Adiciona a nova questão ao array de questões
-    setQuestoes([...questoes, novaQuestao]);
+    // Assuming novaQuestao is an object in your state
+    const novaQuestao = {
+      id_questao: generateUUID(), // Use your method to generate a UUID
+      enunciado: enunciado, // You may replace this with your dynamic content
+      cotacao: 4,
+      tipoQuestao: "EM",
+      versao: 1,
+      opcoes: [],
+    };
+  
+    // Add options to novaQuestao.opcoes based on the input fields
+    for (let index = 1; index < 5; index++) {
+      const opcaoId = generateUUID(); 
 
-    // Limpa o conteúdo da nova questão após adicionar
-    setNovaQuestao("");
-  };
+      const opcaoConteudo = document.getElementById(`opt${index}Conteudo`).value;
+      const criterio = true; // Replace this with your logic for determining the criterion
+      const cotacao_opcao = 1; 
+  
+      // Push the option to novaQuestao.opcoes
+      novaQuestao.opcoes.push({
+        id_opcao: opcaoId,
+        opcao: opcaoConteudo,
+        criterio: criterio,
+        cotacao: cotacao_opcao,
+      });
+    }
+  
+    // Add novaQuestao to the list of questions
+    setQuestoes([...questoes, novaQuestao]);
+  
+    };
 
   const removerQuestao = (index) => {
     // Remove a questão no índice especificado
@@ -23,13 +50,44 @@ function CriarQuestao() {
     setQuestoes(novasQuestoes);
   };
 
+
   const history = useNavigate();
   const voltar = () => {
     history('/criarProva4');
   }
+
   const guardar = () => {
-    // vai para a outra versao (se existir)
-  }
+
+    // Log the structured questions for verification
+
+    // Send the structured questions to the specified endpoint (you need to implement this part)
+    // Example using fetch:
+    fetch(`http://localhost:7778/provas/${idProva}/versao/1/questoes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify( questoes ),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        // Navigate to the next version if it exists
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+      history('/docente');
+  };
+
+  // Helper function to generate a UUID (not fully RFC compliant)
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
 
   return (
     <>
@@ -47,7 +105,7 @@ function CriarQuestao() {
                     className="text-base font-semibold leading-10 text-gray-900"
                     style={{ fontSize: "2rem" }}
                   >
-                    Prova: *nome da prova* {/* ir buscar ao microserviço */}
+                    Prova:  {provaNome}
                   </h1>
                   <br></br>
                   <div className="sm:col-span-4">
@@ -55,7 +113,7 @@ function CriarQuestao() {
                       htmlFor="username"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Data: *data da prova* {/* ir buscar ao microserviço */}
+                      Data: {data}
                     </label>
                   </div>
                   <div className="sm:col-span-4">
@@ -70,7 +128,7 @@ function CriarQuestao() {
                       htmlFor="username"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Sala: *sala da prova* {/* ir buscar ao microserviço */}
+                      Sala: {sala}
                     </label>
                   </div>
                   <br></br>
@@ -119,6 +177,7 @@ function CriarQuestao() {
                           id="questao"
                           name="questao"
                           rows={3}
+                          onChange={(e) => setEnunciado(e.target.value)} 
                           className="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           defaultValue={""}
                         />
@@ -252,7 +311,7 @@ function CriarQuestao() {
                       Voltar
                   </button>
                   <button
-                      className="btn btn-sm btn-primary" type="button"
+                      className="btn btn-sm btn-primary" type="button" onClick={guardar}
                       >
                       Guardar
                   </button>

@@ -13,6 +13,7 @@ function CriarProva2() {
     const [provaHoraHoras, setProvaHoraHoras] = useState("");
     const [provaHoraMinutos, setProvaHoraMinutos] = useState("");
     const [provaDuracao, setProvaDuracao] = useState("");
+    const [provaID, setProvaID] = useState("");
 
     const voltar = () => {
       history('/criarProva');
@@ -26,12 +27,14 @@ function CriarProva2() {
       // Fetch available salas based on the data, horaInicio, and duracao
       const salasResponse = await fetch(`http://localhost:7779/salas/disponiveisPAlunos/${fileContent.length}/${data}/${horaInicio}/${duracao}`);
       const salas = await salasResponse.json();
-      console.log(salas)
+      const idProva = generateUUID(); // Use your existing function to generate a UUID
+      // Update provaID state
+      setProvaID(idProva);
       // Create the object for the POST request to localhost:7778/provas/
       const provaObject = {
         provas: [
           {
-            id_prova: generateUUID(), // Function to generate a unique ID
+            id_prova: idProva, // Function to generate a unique ID
             nome: provaNome,
             id_docente: "docente",
             data: data,
@@ -57,7 +60,7 @@ function CriarProva2() {
       // Check if the request was successful
       if (response.ok) {
         // Handle success, e.g., show a success message or navigate to the next page
-        history('/salas', { state: { salas} })
+        history('/salas', { state: { salas,provaNome,data,provaID} })
       } else {
         // Handle errors, e.g., show an error message
         console.error("Failed to create prova");
