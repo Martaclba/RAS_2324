@@ -6,21 +6,8 @@ var logger = require('morgan');
 const cors = require('cors');
 
 
-
 // Create a connection to the MySQL server
 const connection = require('./controller/connection');
-
-
-
-// const createTableProva = `
-// CREATE TABLE IF NOT EXISTS 'sala' (
-//   'idsalas' INT NOT NULL AUTO_INCREMENT,
-//   'edificio' VARCHAR(45) NOT NULL,
-//   'piso' INT NOT NULL,
-//   'ncomputadores' INT NULL,
-//   'numeroSala' DECIMAL(2) NOT NULL,
-//   PRIMARY KEY ('idsalas'));
-// `;
 
 const createTableSala = `CREATE TABLE IF NOT EXISTS sala (
   id_sala VARCHAR(255) PRIMARY KEY,

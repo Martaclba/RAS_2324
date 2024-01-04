@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var Sala = require('../controller/sala')
-// var ReservedSala = require('../classes/ReservedSala')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
