@@ -1,15 +1,14 @@
 import React from "react";
 import NavbarDocente from "../componentes/NavbarDocente";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 
 
 function DisponibilidadeSalas() {
+  var { salas } = useLocation().state;
   const history = useNavigate();
+  salas = salas.salasDisponiveis;
   const voltar = () => {
       history('/criarProva2');
-  }
-  const alterar = () => {
-      // history('/criarProva2');
   }
   const continuar = () => {
     history('/criarProva4');
@@ -27,7 +26,7 @@ function DisponibilidadeSalas() {
                             </h1>
                             <hr></hr>
                             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 text-black">
-                              <h1>Complexo Pedagógico 1 - 0.04, 0.08</h1>
+                              <h1>Complexo Pedagógico 1 - {salas.join(', ')}</h1>
                             </div>
                         </div>
                     </div>

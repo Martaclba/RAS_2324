@@ -218,11 +218,11 @@ function findAvailableSalasParaAlunos(alunosTotais, data, horaInicio, duracao, c
 
         if (capacidadeSala >= alunosRestantes) {
           // A sala tem capacidade suficiente para todos os alunos restantes
-          selectedSalas.push({ id_sala: sala.id_sala, capacidade: alunosRestantes });
+          selectedSalas.push(sala.id_sala);
           alunosRestantes = 0;
         } else {
           // A sala tem capacidade menor do que os alunos restantes
-          selectedSalas.push({ id_sala: sala.id_sala, capacidade: capacidadeSala });
+          selectedSalas.push(sala.id_sala);
           alunosRestantes -= capacidadeSala;
         }
 

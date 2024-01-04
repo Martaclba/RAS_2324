@@ -1,16 +1,77 @@
 import React, { useState } from "react";
 import NavbarDocente from "../componentes/NavbarDocente";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 
 
 function CriarProva2() {
-  const history = useNavigate();
-  const voltar = () => {
+    const { provaNome, fileContent } = useLocation().state;
+    console.log(provaNome)
+    console.log(fileContent)
+
+    const history = useNavigate();
+    const [provaData, setProvaData] = useState("");
+    const [provaHoraHoras, setProvaHoraHoras] = useState("");
+    const [provaHoraMinutos, setProvaHoraMinutos] = useState("");
+    const [provaDuracao, setProvaDuracao] = useState("");
+
+    const voltar = () => {
       history('/criarProva');
-  }
-  const continuar = () => {
-    history('/salas');
-  }
+    }
+
+    const continuar = async () => {
+      const data = provaData;
+      const horaInicio = `${provaHoraHoras}:${provaHoraMinutos}`;
+      const duracao = provaDuracao;
+
+      // Fetch available salas based on the data, horaInicio, and duracao
+      const salasResponse = await fetch(`http://localhost:7779/salas/disponiveisPAlunos/${fileContent.length}/${data}/${horaInicio}/${duracao}`);
+      const salas = await salasResponse.json();
+      console.log(salas)
+      // Create the object for the POST request to localhost:7778/provas/
+      const provaObject = {
+        provas: [
+          {
+            id_prova: generateUUID(), // Function to generate a unique ID
+            nome: provaNome,
+            id_docente: "docente",
+            data: data,
+            duracao: parseInt(duracao),
+            hora: horaInicio,
+            aleatorio: false,
+            bloquear: false,
+            alunos: fileContent,
+            salas: salas.salasDisponiveis,
+          }
+        ]
+      };
+
+      // Make the POST request to localhost:7778/provas/
+      const response = await fetch("http://localhost:7778/provas/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(provaObject),
+      });
+
+      // Check if the request was successful
+      if (response.ok) {
+        // Handle success, e.g., show a success message or navigate to the next page
+        history('/salas', { state: { salas} })
+      } else {
+        // Handle errors, e.g., show an error message
+        console.error("Failed to create prova");
+      }
+    }
+
+    const generateUUID = () => {
+      // Function to generate a unique ID (for id_prova)
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = (c === 'x') ? r : (r & (0x3 | 0x8));
+        return v.toString(16);
+      });
+    }
     return (
         <><NavbarDocente />
         <div className="hero min-h-screen bg-base-200">
@@ -35,6 +96,8 @@ function CriarProva2() {
                                                 name="provaData"
                                                 id="provaData"
                                                 autoComplete="provaData"
+                                                value={provaData}
+                                                onChange={(e) => setProvaData(e.target.value)}
                                                 className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                                                 placeholder="Nome da prova"
                                             />
@@ -52,6 +115,8 @@ function CriarProva2() {
                                                 name="provaHoraHoras"
                                                 id="provaHoraHoras"
                                                 autoComplete="provaHoraHoras"
+                                                value={provaHoraHoras}
+                                                onChange={(e) => setProvaHoraHoras(e.target.value)}
                                                 className="block w-1/2 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                                                 placeholder="Horas"
                                             />
@@ -61,6 +126,8 @@ function CriarProva2() {
                                                 name="provaHoraMinutos"
                                                 id="provaHoraMinutos"
                                                 autoComplete="provaHoraMinutos"
+                                                value={provaHoraMinutos}
+                                                onChange={(e) => setProvaHoraMinutos(e.target.value)}
                                                 className="block w-1/2 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                                                 placeholder="Minutos"
                                             />
@@ -80,6 +147,8 @@ function CriarProva2() {
                                             name="provaDuracao"
                                             id="provaDuracao"
                                             autoComplete="provaDuracao"
+                                            value={provaDuracao}
+                                            onChange={(e) => setProvaDuracao(e.target.value)}
                                             className="block flex-1 border-0 bg-transparent py-1.5 pl-2 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                                             placeholder="Duração da prova"
                                         />

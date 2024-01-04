@@ -3,13 +3,47 @@ import NavbarDocente from "../componentes/NavbarDocente";
 import { useNavigate } from 'react-router-dom';
 
 function CriarProva() {
-  const history = useNavigate();
-  const handleClick = () => {
+    const history = useNavigate();
+    const [provaNome, setProvaNome] = React.useState("");
+    const [fileContent, setFileContent] = React.useState([]);
+
+    const handleClick = () => {
       history('/docente');
-  }
-  const continuar = () => {
-      history('/criarProva2');
-  }
+    }
+
+    const continuar = () => {
+      // Pass the data to the next page via state or any other desired method
+      history('/criarProva2', { state: { provaNome, fileContent } });
+    }
+
+    const handleNomeChange = (e) => {
+      setProvaNome(e.target.value);
+    }
+
+    const handleFileChange = (e) => {
+      const file = e.target.files[0];
+
+      const reader = new FileReader();
+    
+      reader.onload = (event) => {
+        try {
+          // Assuming the file content is in the format "[pg53895,pg53816,pg54162,pg54284]"
+          const content = event.target.result;
+    
+          // Remove square brackets and split by commas to create an array
+          const parsedArray = content.replace(/\[|\]/g, '').split(',');
+    
+    
+          // You can set the parsed array to the state if needed
+          setFileContent(parsedArray);
+        } catch (error) {
+          console.error('Error parsing file content:', error);
+        }
+      };
+    
+      // Pass the file to the FileReader
+      reader.readAsText(file);
+    }
     return (
         <><NavbarDocente />
         <div className="hero min-h-screen bg-base-200">
@@ -34,6 +68,8 @@ function CriarProva() {
                                     name="provaNome"
                                     id="provaNome"
                                     autoComplete="provaNome"
+                                    value={provaNome}
+                                    onChange={handleNomeChange}
                                     className="block flex-1 border-0 bg-transparent py-1.5 pl-2 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                                     placeholder="Nome da prova"
                                 />
@@ -49,6 +85,7 @@ function CriarProva() {
                                 </div>
                                 <input
                                   type="file"
+                                  onChange={handleFileChange}
                                   className="file-input file-input-sm file-input-bordered file-input-secondary w-full max-w-xs"
                                   style={{ borderRadius: '5px', color: 'gray' }}
                                 />
