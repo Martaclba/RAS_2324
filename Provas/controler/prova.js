@@ -597,6 +597,7 @@ function addAlunoProva(prova,aluno) {
         return;
       }
       // If aluno doesn't exist, add them to the database
+      console.log(results)
       if (results.length === 0) {
         const addAlunoQuery = 'INSERT INTO aluno VALUES (?);';
         const addAlunoValues = [aluno];
@@ -656,17 +657,19 @@ module.exports.addProva = provaData =>{
 
 
 module.exports.getProvasAluno = (id_aluno,callback) =>{
+  console.log("aaa")
+
   const query = `
       SELECT
         p.id_prova ,
         p.nome AS nome,
         p.data,
         CASE
-            WHEN STR_TO_DATE(p.data, '%d.%m.%Y') > CURDATE() THEN 'POR REALIZAR'
-            WHEN STR_TO_DATE(p.data, '%d.%m.%Y') = CURDATE() THEN 'REALIZAR'
-            WHEN pr.id_prova_realizada IS NOT NULL AND pr.classificacao_final IS NULL THEN 'REALIZADA'
-            WHEN pr.classificacao_final IS NOT NULL THEN 'CORRIGIDA'
-            ELSE 'NULL'
+        WHEN pr.id_prova_realizada IS NOT NULL AND pr.classificacao_final IS NULL THEN 'REALIZADA'
+        WHEN pr.classificacao_final IS NOT NULL THEN 'CORRIGIDA'
+        WHEN STR_TO_DATE(p.data, '%Y-%m-%d') > CURDATE() THEN 'POR REALIZAR'
+        WHEN STR_TO_DATE(p.data, '%Y-%m-%d') = CURDATE() THEN 'REALIZAR'
+        ELSE 'NULL'
         END AS estado
       FROM
         prova p
@@ -678,7 +681,9 @@ module.exports.getProvasAluno = (id_aluno,callback) =>{
         ap.id_aluno = ?;
   
   `
+
   db.query(query, [id_aluno], (err, results) => {
+
     if (err) {
       callback(err, null);
     } else {

@@ -1,18 +1,76 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 import NavbarAluno from "../componentes/NavbarAluno";
 
 
 function RealizarProva2() {
+
+  var {questoes,indice,respostas, nome, id} = useLocation().state;
+  console.log(id);
+  
+  //console.log(questoes[indice])
   const history = useNavigate();
-  const questao1 = () => {
-    history('/realizarProva');
+
+  const [respostaSelecionada, setRespostaSelecionada] = useState(null);
+  const [questaoSelecionada, setQuestaoSelecionada] = useState(0);
+
+  useEffect(() => {
+    const opcaoSelecionada = respostas[indice]?.opcoes.find((opcao) => opcao.resposta_utilizador === 'true');
+    setRespostaSelecionada(opcaoSelecionada || null);
+
+  }, [indice, respostas]);
+
+
+  const questao = (indice) => {
+    setQuestaoSelecionada(indice);
+    history('/realizarProva2', { state: { questoes, indice: indice, respostas, id} });
   }
-  const questao3 = () => {
-    history('/realizarProva3');
-  }
+
+  const selecionarResposta = (opcao, opcoes) => {
+    setRespostaSelecionada(opcao);
+  
+    // Define resposta_utilizador para false em todas as opções
+    opcoes.forEach((opcao) => {
+      opcao.resposta_utilizador = "false";
+    });
+  
+    // Define resposta_utilizador para true na opção selecionada
+    opcao.resposta_utilizador = "true";
+  
+    respostas[indice] = {
+      id_questao: questoes[indice].id,
+      opcoes: questoes[indice].opcoes.map((opcao, j) => ({
+        id_opcao: opcao.idopcao,
+        resposta_utilizador: opcao.resposta_utilizador
+      }))
+    };
+  
+  };
+  
   const terminar = () => {
-    history('/provasAluno');
+
+    const idProva = id; 
+    const numAluno = "pg53895"; 
+
+    fetch(`http://localhost:7778/provas/${idProva}/responder`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        numAluno: numAluno,
+        respostas: respostas,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+    
+      console.log('Respostas enviadas com sucesso:', data);
+      history('/provasAluno');
+    })
+    .catch((error) => {
+      console.error('Erro ao enviar respostas:', error);
+    });
   }
 
   return (
@@ -31,7 +89,7 @@ function RealizarProva2() {
                     className="text-base font-semibold leading-10 text-gray-900"
                     style={{ fontSize: "2rem" }}
                   >
-                    ASCN - Teste Teórico {/* ir buscar ao microserviço */}
+                   {nome} {/* ir buscar ao microserviço */}
                   </h1>
                   <div className="sm:col-span-4">
                   </div>
@@ -44,14 +102,14 @@ function RealizarProva2() {
                         htmlFor="questao"
                         className="block text-md font-medium leading-10 text-gray-900"
                       >
-                        Questão 2
+                        Questão {indice + 1}
                       </label>
                       <label
                         htmlFor="questao"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
-                        A complexidade da replicação de um serviço multi-camada não varia de acordo com o componente alvo (p.ex., servidor web, servidor aplicacional, base de dados) 
-                        a replicar. Indique e justifique se concorda ou não com esta afirmação.
+                      {questoes[indice].enunciado}
+
                       </label>
                     </div>
 
@@ -69,23 +127,26 @@ function RealizarProva2() {
                         className="mt-1 space-y-2"
                         style={{ width: "700px" }}
                       >
-                        {[1, 2, 3, 4].map((index) => (
-                          <div
-                            key={index}
-                            className="flex w-full items-center gap-x-3"
-                          >
+                        {questoes[indice].opcoes.map((opcao, index) => (
+                          <div key={index} className="flex w-full items-center gap-x-3">
                             <input
-                              id={`opt${index}`}
+                              id={opcao.idopcao}
                               name="opcoes"
                               type="radio"
                               className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                              checked={
+                                respostas[indice] && respostas[indice].opcoes.some(
+                                  (rOpcao) => rOpcao.resposta_utilizador === "true" && rOpcao.id_opcao === opcao.idopcao
+                                )
+                              }
+                              onChange={() => selecionarResposta(opcao, questoes[indice].opcoes)}
                             />
                             <label
                               htmlFor={`opt${index}Conteudo`}
                               className="block text-sm font-medium leading-6 text-gray-900"
                             >
                               <div className="flex focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                                <label>descriçao da opção {index}</label>
+                                <label>{opcao.opcao} </label>
                               </div>
                             </label>
                           </div>
@@ -98,22 +159,20 @@ function RealizarProva2() {
                 </div>
               </div>
               <div className="flex justify-between">
+
                 <div className="join">
-                    <input className="join-item btn btn-square btn-sm" type="radio" name="options" aria-label="1" onClick={questao1} />
-                    <input className="join-item btn btn-square btn-sm" type="radio" name="options" aria-label="2" checked />
-                    <input className="join-item btn btn-square btn-sm" type="radio" name="options" aria-label="3" onClick={questao3} />
-                    <input className="join-item btn btn-square btn-sm" type="radio" name="options" aria-label="4" />
-                </div>
-                <div className="sm:col-span-4">
-                <div className="text-black flex gap-5">
-                    <label>Tempo restante:</label>
-                    <span className="countdown font-mono text-xl">
-                      <span style={{ "--value": 10 }}></span>:
-                      <span style={{ "--value": 24 }}></span>:
-                      <span style={{ "--value": 52 }}></span>
-                    </span>
-                  </div>
-                </div>
+                  {questoes.map((_, i) => (
+                    <input
+                      key={i}
+                      className="join-item btn btn-square btn-sm"
+                      type="radio"
+                      name="options"
+                      aria-label={i + 1}
+                      checked={questaoSelecionada === i}
+                      onClick={() => questao(i)}
+                    />
+                  ))}
+                </div>                   
             </div>
             <div className="mt-6 flex items-center justify-end gap-x-6">
                 <button
