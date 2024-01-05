@@ -4,14 +4,14 @@ import { useNavigate,useLocation } from 'react-router-dom';
 
 
 function DisponibilidadeSalas() {
-  var { salas,provaNome,data,idProva } = useLocation().state;
+  var { alunos,salas,provaNome,data,idProva, horaInicio, duracao } = useLocation().state;
   const history = useNavigate();
   salas = salas.salasDisponiveis;
   const voltar = () => {
       history('/criarProva2');
   }
   const continuar = () => {
-    history('/criarProva4', { state: { salas,provaNome,data,idProva} });
+    history('/criarProva4', { state: { alunos,salas,provaNome,data,idProva, horaInicio, duracao } });
   }
     return (
         <><NavbarDocente />

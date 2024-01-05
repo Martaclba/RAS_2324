@@ -15,6 +15,11 @@ function RealizarProva() {
     history('/provasAluno');
   }
 
+  const consultar = () => {
+    //history('/consultar');
+}
+
+
   return (
     <>
       <NavbarAluno />

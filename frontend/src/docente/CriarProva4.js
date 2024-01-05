@@ -4,13 +4,20 @@ import { useNavigate,useLocation } from 'react-router-dom';
 
 
 function CriarProva4() {
-  var { salas,provaNome,data ,idProva} = useLocation().state;
+  var { alunos, salas, provaNome, data ,idProva, horaInicio, duracao} = useLocation().state;
+  console.log(idProva)
+  console.log(horaInicio)
+  console.log(duracao)
+  console.log(provaNome)
+  console.log(data)
+  console.log(alunos)
+  console.log(salas)
   const history = useNavigate();
   const voltar = () => {
       history('/salas');
   }
   const continuar = (sala) => {
-    history('/criarQuestao',{ state: { sala,provaNome,data,idProva} });
+    history('/criarQuestao',{ state: { alunos, salas,provaNome,data,idProva, horaInicio, duracao } });
   }
     return (
         <><NavbarDocente />
